@@ -1,0 +1,111 @@
+
+ATtiny44aDecoder.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000060  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  000000b4  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  000000b4  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000000e4  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000028  00000000  00000000  00000120  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   000004d6  00000000  00000000  00000148  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000465  00000000  00000000  0000061e  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   000001c6  00000000  00000000  00000a83  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000040  00000000  00000000  00000c4c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    000002e0  00000000  00000000  00000c8c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    0000002f  00000000  00000000  00000f6c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000018  00000000  00000000  00000f9b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	10 c0       	rjmp	.+32     	; 0x22 <__ctors_end>
+   2:	17 c0       	rjmp	.+46     	; 0x32 <__bad_interrupt>
+   4:	16 c0       	rjmp	.+44     	; 0x32 <__bad_interrupt>
+   6:	15 c0       	rjmp	.+42     	; 0x32 <__bad_interrupt>
+   8:	14 c0       	rjmp	.+40     	; 0x32 <__bad_interrupt>
+   a:	13 c0       	rjmp	.+38     	; 0x32 <__bad_interrupt>
+   c:	12 c0       	rjmp	.+36     	; 0x32 <__bad_interrupt>
+   e:	11 c0       	rjmp	.+34     	; 0x32 <__bad_interrupt>
+  10:	11 c0       	rjmp	.+34     	; 0x34 <__vector_8>
+  12:	0f c0       	rjmp	.+30     	; 0x32 <__bad_interrupt>
+  14:	0e c0       	rjmp	.+28     	; 0x32 <__bad_interrupt>
+  16:	0d c0       	rjmp	.+26     	; 0x32 <__bad_interrupt>
+  18:	0c c0       	rjmp	.+24     	; 0x32 <__bad_interrupt>
+  1a:	0b c0       	rjmp	.+22     	; 0x32 <__bad_interrupt>
+  1c:	0a c0       	rjmp	.+20     	; 0x32 <__bad_interrupt>
+  1e:	09 c0       	rjmp	.+18     	; 0x32 <__bad_interrupt>
+  20:	08 c0       	rjmp	.+16     	; 0x32 <__bad_interrupt>
+
+00000022 <__ctors_end>:
+  22:	11 24       	eor	r1, r1
+  24:	1f be       	out	0x3f, r1	; 63
+  26:	cf e5       	ldi	r28, 0x5F	; 95
+  28:	d1 e0       	ldi	r29, 0x01	; 1
+  2a:	de bf       	out	0x3e, r29	; 62
+  2c:	cd bf       	out	0x3d, r28	; 61
+  2e:	0c d0       	rcall	.+24     	; 0x48 <main>
+  30:	15 c0       	rjmp	.+42     	; 0x5c <_exit>
+
+00000032 <__bad_interrupt>:
+  32:	e6 cf       	rjmp	.-52     	; 0x0 <__vectors>
+
+00000034 <__vector_8>:
+#include <avr/delay.h>
+
+#define  F_CPU 1000000 UL;
+
+ISR(TIM1_OVF_vect)
+{
+  34:	1f 92       	push	r1
+  36:	0f 92       	push	r0
+  38:	0f b6       	in	r0, 0x3f	; 63
+  3a:	0f 92       	push	r0
+  3c:	11 24       	eor	r1, r1
+		
+}
+  3e:	0f 90       	pop	r0
+  40:	0f be       	out	0x3f, r0	; 63
+  42:	0f 90       	pop	r0
+  44:	1f 90       	pop	r1
+  46:	18 95       	reti
+
+00000048 <main>:
+
+int main(void)
+{
+	/////////////////INTERRUPTION///////////
+	
+	TIMSK1 |= (1<<TOIE1);//Разрешение на работу таймера.счётчика
+  48:	8c b1       	in	r24, 0x0c	; 12
+  4a:	81 60       	ori	r24, 0x01	; 1
+  4c:	8c b9       	out	0x0c, r24	; 12
+	TCCR1B |= (0<<CS12)|(0<<CS11)|(1<<CS10); //Работа без прескейлера
+  4e:	8e b5       	in	r24, 0x2e	; 46
+  50:	81 60       	ori	r24, 0x01	; 1
+  52:	8e bd       	out	0x2e, r24	; 46
+	TCNT1 = 0;//обнуляем таймер/счётчик
+  54:	1d bc       	out	0x2d, r1	; 45
+  56:	1c bc       	out	0x2c, r1	; 44
+	
+	sei();//Глобально разрешаем прерывания
+  58:	78 94       	sei
+  5a:	ff cf       	rjmp	.-2      	; 0x5a <main+0x12>
+
+0000005c <_exit>:
+  5c:	f8 94       	cli
+
+0000005e <__stop_program>:
+  5e:	ff cf       	rjmp	.-2      	; 0x5e <__stop_program>
